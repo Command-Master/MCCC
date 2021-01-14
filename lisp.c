@@ -1,3 +1,8 @@
+/*
+Some changes to https://github.com/shinh/elvm/blob/master/test/lisp.c (IO functions, and some bug fixes)
+*/
+
+
 #define NULL ((void*)0)
 
 int g_buf;
@@ -59,8 +64,6 @@ typedef struct Table {
 } Table;
 
 void printExpr(Atom* expr) {
-//    int_print(expr);
-//    return;
   if (!expr) {
     puts("nil");
     return;
@@ -92,17 +95,14 @@ void printExpr(Atom* expr) {
 }
 
 List* cons(Atom* h, List* t) {
-//  puts("cons start");
   List* s = (List*)ALLOC(sizeof(List));
   s->head = h;
   s->tail = t;
-//  puts("cons end");
   return s;
 }
 
 Atom* createAtom(Type type) {
   Atom* a = (Atom*)ALLOC(sizeof(Atom));
-//  int_print(a);
   a->type = type;
   return a;
 }
@@ -123,10 +123,7 @@ Atom* createList(List* l) {
   if (l == NULL)
     return NULL;
   Atom* a = createAtom(LIST);
-//  int_print(a);
   a->list = l;
-//  puts("create list");
-//  int_print(a);
   return a;
 }
 
@@ -158,7 +155,6 @@ void skipWS() {
 }
 
 Atom* parseList() {
-//    puts("parse list start");
   List* l = NULL;
   List* n = NULL;
   while (1) {
@@ -176,8 +172,6 @@ Atom* parseList() {
     }
     n = t;
   }
-//  puts("parse list end");
-//  int_print(l);
   return createList(l);
 }
 
@@ -304,22 +298,16 @@ int getListSize(List* l) {
 }
 
 Atom* eval(Atom* a, Table* val) {
-//    puts("eval start");
-//    printExpr(a);
-//    puts("print end");
   if (atom(a)) {
     if (a && a->type == STR) {
       Table* t = lookupTable(val, a->str);
       if (t) {
         return t->value;
       }
-//      puts("gval");
       t = lookupTable(g_val, a->str);
-//      puts("gval end");
       if (t)
         return t->value;
     }
-//    puts("no npe");
     return a;
   }
   List* s = a->list;
@@ -370,9 +358,6 @@ Atom* eval(Atom* a, Table* val) {
     }
   }
   Atom* hd = eval(s->head, val);
-//  puts("head is:::");
-//    printExpr(hd);
-//    puts("head is deoneE!!");
   if (hd->type == LAMBDA) {
     List* args = hd->list->head ? hd->list->head->list : NULL;
 
@@ -470,7 +455,6 @@ Atom* eval(Atom* a, Table* val) {
         return NULL;
     } else if (fn[0] == 'p' && fn[1] == 'r' && fn[2] == 'i' &&
                fn[3] == 'n' && fn[4] == 't' && fn[5] == '\0') {
-//      puts("Doing print!!!! (:");
       if (getListSize(s) != 2)
         ERROR("invalid print");
       Atom* e = eval(s->tail->head, val);
@@ -516,9 +500,7 @@ int main() {
 
   while (1) {
     Atom* expr = parse();
-//    puts("finish parse!");
     if (!expr) return;
-//    printExpr(expr);
     Atom* result = eval(expr, NULL);
   }
   puts("");
