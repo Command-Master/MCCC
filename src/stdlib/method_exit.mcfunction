@@ -1,0 +1,2 @@
+gamerule maxCommandChainLength 1
+say EXITTITITITITITI
