@@ -1,6 +1,7 @@
 // uncomment this if you want to compile
 //#include <stdio.h>
 //#define int_print(x) printf("%d\n", (x))
+//#define float_print(x) printf("%f\n", (x))
 
 
 

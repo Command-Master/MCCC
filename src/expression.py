@@ -34,6 +34,22 @@ def generate_expression(target, expression, vtypes, variables_name, copy_strings
                 return parse_string_const(copy_strings, expression, target)
             elif expression.type == 'double':
                 return parse_double(expression, target)
+        elif cname(expression) == 'InitList':
+            assert copy_strings
+            code = ''
+            types = []
+            ttes = []
+            for expr in expression.exprs:
+                c1, t1, tt1 = generate_expression(None, expr, vtypes, variables_name, True, False)
+                types.append(t1)
+                ttes.extend(tt1)
+                code += c1
+            code += f'scoreboard players operation $index {NAMESPACE} = {target[0]} {NAMESPACE}\n'
+            for co, c in enumerate(ttes):
+                code += f'scoreboard players operation $value {NAMESPACE} = {c} {NAMESPACE}\n'
+                code += f'function {NAMESPACE}:set_heap\n'
+                code += f'scoreboard players add $index {NAMESPACE} 1\n'
+            return code, Pointer(Int()), target
     else:
         if cname(expression) == 'Compound':
             return compound_expression(copy_strings, expression, target, variables_name, vtypes)
