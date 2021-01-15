@@ -1,3 +1,4 @@
+#define EOF (-1)
 
 int c;
 int main() {
@@ -14,6 +15,23 @@ int main() {
         int_print(a);
         int_print(c);
     }
+    while (0 != 0) {
+        puts("hi!");
+    }
+    char equation[256];
+    char x;
+    char* p = equation;
+    int i = 0;
+    while((x = getc(stdin)) != EOF) {
+        *(p++) = x;
+        i++;
+    }
+    puts(equation);
+    int i = 1;
+    int_print(i++); // 1
+    int_print(++i); // 3
+    int_print(i--); // 3
+    int_print(--i); // 1
     exit();
     int i = 0;
     for (i = 0; i < 10; i++) {

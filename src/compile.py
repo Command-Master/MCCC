@@ -20,8 +20,6 @@ def main():
     copy_stdlib()
     if '--file-input' in sys.argv:
         inp = list(reversed(open('input.txt', 'rb').read()))
-    else:
-        inp = []
     os.chdir('functions')
     parser = CParser()
     parsed = parser.parse(preprocessed)
@@ -66,8 +64,8 @@ def main():
         f.write(generate_expression([], methods[method].body, vtypes, obj_name, False, True)[0])
         f.write(f'scoreboard players set $returned {NAMESPACE} 0')
         f.close()
-
-    file.write(f'data modify storage {NAMESPACE}:main input set value {inp}\n')
+    if '--file-input' in sys.argv:
+        file.write(f'data modify storage {NAMESPACE}:main input set value {inp}\n')
     file.write(f'data modify storage {NAMESPACE}:main ibuffer set value []\n')
 
     for strg in stringss:

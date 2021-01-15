@@ -26,8 +26,9 @@ def compound_expression(copy_strings, expression, target, variables_name, vtypes
                 alloc_size = int(ctype.dim.value)
                 assert alloc_size < 1024, 'Too big local array, make it global!'
                 code += f'''data modify storage {NAMESPACE}:main temp set from storage {NAMESPACE}:main alloc[{{used:0}}].index
-execute store result score {cvals[0]} {NAMESPACE} run data get storage {NAMESPACE}:main temp
+execute store result score $r0 {NAMESPACE} run data get storage {NAMESPACE}:main temp
 function {NAMESPACE}:tree/mark_used
+scoreboard players operation {cvals[0]} {NAMESPACE} = $r0 {NAMESPACE}
 scoreboard players operation {cvals[0]} {NAMESPACE} *= $1024 {NAMESPACE}
 scoreboard players add {cvals[0]} {NAMESPACE} 536870912
 '''

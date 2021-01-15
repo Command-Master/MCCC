@@ -12,7 +12,7 @@ from for_expr import for_expression
 from if_expr import if_expression
 from bin_expr import binary_expression
 from funccall_expr import funccall_expression
-from unary_expr import address_unary, dereference_unary, post_increment_unary
+from unary_expr import address_unary, dereference_unary, operator_unary
 from ternary_expr import ternary_expression
 from while_expr import while_expression
 from temps import used_temps, get_temp
@@ -138,7 +138,13 @@ def generate_expression(target, expression, vtypes, variables_name, copy_strings
         return c1, type_cast, target
     elif cname(expression) == 'UnaryOp':
         if expression.op == 'p++':
-            return post_increment_unary(copy_strings, expression, variables_name, vtypes)
+            return operator_unary(copy_strings, expression, variables_name, vtypes, '+', True)
+        elif expression.op == 'p--':
+            return operator_unary(copy_strings, expression, variables_name, vtypes, '-', True)
+        elif expression.op == '++':
+            return operator_unary(copy_strings, expression, variables_name, vtypes, '+', False)
+        elif expression.op == '--':
+            return operator_unary(copy_strings, expression, variables_name, vtypes, '-', False)
         elif expression.op == '-':
             c1, t1, tt1 = generate_expression(None, expression.expr, vtypes, variables_name, copy_strings, False)
             code = c1
@@ -179,24 +185,35 @@ def generate_expression(target, expression, vtypes, variables_name, copy_strings
     elif cname(expression) == 'FuncCall':
         return funccall_expression(copy_strings, expression, variables_name, vtypes)
     elif cname(expression) == 'StructRef':
-        assert expression.type == '->'
-        c1, t1, tt1 = generate_expression(None, expression.name, vtypes, variables_name, copy_strings, False)
-        code = ''
-        code += c1
-        for t in tt1: used_temps.remove(t)
-        assert type(t1) == Pointer
-        assert type(t1.ptr) == Struct
-        out_type = t1.ptr.get_field_type(expression.field.name)
-        offset = t1.ptr.get_field_offset(expression.field.name)
-        target = [get_temp() for _ in range(out_type.size)]
-        used_temps.extend(target)
-        code += f'scoreboard players operation $index {NAMESPACE} = {tt1[0]} {NAMESPACE}\n'
-        code += f'scoreboard players add $index {NAMESPACE} {offset}\n'
-        for t in target:
-            code += f'function {NAMESPACE}:get_heap\n'
-            code += f'scoreboard players operation {t} {NAMESPACE} = $value {NAMESPACE}\n'
-            code += f'scoreboard players add $index {NAMESPACE} 1\n'
-        return code, out_type, target
+        if expression.type == '->':
+            c1, t1, tt1 = generate_expression(None, expression.name, vtypes, variables_name, copy_strings, False)
+            code = ''
+            code += c1
+            for t in tt1: used_temps.remove(t)
+            assert type(t1) == Pointer
+            assert type(t1.ptr) == Struct
+            out_type = t1.ptr.get_field_type(expression.field.name)
+            offset = t1.ptr.get_field_offset(expression.field.name)
+            target = [get_temp() for _ in range(out_type.size)]
+            used_temps.extend(target)
+            code += f'scoreboard players operation $index {NAMESPACE} = {tt1[0]} {NAMESPACE}\n'
+            code += f'scoreboard players add $index {NAMESPACE} {offset}\n'
+            for t in target:
+                code += f'function {NAMESPACE}:get_heap\n'
+                code += f'scoreboard players operation {t} {NAMESPACE} = $value {NAMESPACE}\n'
+                code += f'scoreboard players add $index {NAMESPACE} 1\n'
+            return code, out_type, target
+        else:
+            assert expression.type == '.'
+            c1, t1, tt1 = generate_expression(None, expression.name, vtypes, variables_name, copy_strings, False)
+            code = c1
+            assert type(t1) == Struct
+            out_type = t1.get_field_type(expression.field.name)
+            offset = t1.get_field_offset(expression.field.name)
+            return_variables = tt1[offset:offset + out_type.size]
+            for t in tt1:
+                if t not in return_variables: used_temps.remove(t)
+            return code, out_type, return_variables
     elif cname(expression) == 'EmptyStatement':
         return '# empty statement lol\n', Void(), []
     print(expression, ignore_output)

@@ -42,24 +42,31 @@ def assignment_target(target, vtypes, variables_name):
             for tt in out: used_temps.remove(tt)
             return '', outtargs, code, t.ptr
     elif cname(target) == 'StructRef':
-        assert target.type == '->'
-        c1, t1, tt1 = generate_expression(None, target.name, vtypes, variables_name, False, False)
-        code = ''
-        code += c1
-        for t in tt1: used_temps.remove(t)
-        assert type(t1) == Pointer
-        assert type(t1.ptr) == Struct
-        out_type = t1.ptr.get_field_type(target.field.name)
-        offset = t1.ptr.get_field_offset(target.field.name)
-        target = [get_temp() for _ in range(out_type.size)]
-        used_temps.extend(target)
-        code += f'scoreboard players operation $index {NAMESPACE} = {tt1[0]} {NAMESPACE}\n'
-        code += f'scoreboard players add $index {NAMESPACE} {offset}\n'
-        for t in target:
-            code += f'scoreboard players operation $value {NAMESPACE} = {t} {NAMESPACE}\n'
-            code += f'function {NAMESPACE}:set_heap\n'
-            code += f'scoreboard players add $index {NAMESPACE} 1\n'
+        if target.type == '->':
+            c1, t1, tt1 = generate_expression(None, target.name, vtypes, variables_name, False, False)
+            code = ''
+            code += c1
+            for t in tt1: used_temps.remove(t)
+            assert type(t1) == Pointer
+            assert type(t1.ptr) == Struct
+            out_type = t1.ptr.get_field_type(target.field.name)
+            offset = t1.ptr.get_field_offset(target.field.name)
+            target = [get_temp() for _ in range(out_type.size)]
+            used_temps.extend(target)
+            code += f'scoreboard players operation $index {NAMESPACE} = {tt1[0]} {NAMESPACE}\n'
+            code += f'scoreboard players add $index {NAMESPACE} {offset}\n'
+            for t in target:
+                code += f'scoreboard players operation $value {NAMESPACE} = {t} {NAMESPACE}\n'
+                code += f'function {NAMESPACE}:set_heap\n'
+                code += f'scoreboard players add $index {NAMESPACE} 1\n'
 
-        return '', target, code, out_type
+            return '', target, code, out_type
+        elif target.type == '.':
+            out_type = vtypes[target.name.name]
+            print(out_type, target)
+            out_typ = out_type.get_field_type(target.field.name)
+            offset = out_type.get_field_offset(target.field.name)
+            return_variables = variables_name[target.name.name][offset:offset + out_typ.size]
+            return '', return_variables, '', out_typ
     print(target)
-    raise NotImplementedError(cname(target))
+    raise NotImplementedError(cname(target), target)

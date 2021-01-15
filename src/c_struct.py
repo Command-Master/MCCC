@@ -1,12 +1,19 @@
 from collections import OrderedDict
 
-from globals_consts import cname
+from globals_consts import cname, NAMESPACE
 
 
 class Struct:
     def __init__(self, values):
         self.size = sum(map(lambda x: x.size, values.values()))
         self.values = OrderedDict(values)  # need consistent order
+
+    def cast(self, ot, itemps, otemps):
+        assert self == ot
+        code = ''
+        for t1, t2 in zip(itemps, otemps):
+            code += f'scoreboard players operation {t2} {NAMESPACE} = {t1} {NAMESPACE}\n'
+        return code
 
     def update(self, types):
         for val in self.values:

@@ -38,7 +38,7 @@ def dereference_unary(copy_strings, expression, variables_name, vtypes):
     return code, t1.ptr, targets
 
 
-def post_increment_unary(copy_strings, expression, variables_name, vtypes):
+def operator_unary(copy_strings, expression, variables_name, vtypes, op, pre):
     from expression import generate_expression
     code = ''
     c1, t1, tt1 = generate_expression(None, expression.expr, vtypes, variables_name, copy_strings, False)
@@ -51,6 +51,9 @@ def post_increment_unary(copy_strings, expression, variables_name, vtypes):
     code += start
     c2 = out_type.get_value(1, targets)
     code += c2
-    code += out_type.binary('+', targets, tt1, targets)
+    code += out_type.binary(op, tt1, targets, targets)
     code += end
+    if not pre:
+        for t1, t2 in zip(targets, tt1):
+            code += f'scoreboard players operation {t2} {NAMESPACE} = {t1} {NAMESPACE}\n'
     return code, out_type, tt1
