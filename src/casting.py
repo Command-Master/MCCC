@@ -6,6 +6,8 @@ from globals_consts import cname
 from c_double import Double
 from c_complex import Complex
 from c_void import Void
+from c_function import Function
+
 types = {
     'int': Int(),
     'char': Int(),
@@ -17,7 +19,7 @@ types = {
 
 
 def cast(t1, t2):
-    t1, t2 = sorted([t1, t2], key=cname) # hahaha sort go brrr
+    t1, t2 = sorted([t1, t2], key=cname)  # hahaha sort go brrr
     tt1, tt2 = cname(t1), cname(t2)
     if tt1 == tt2:
         return t1
@@ -72,9 +74,17 @@ def get_type(var_type, vs=None, vt=None, allow_unprocessed=False):
         for val in var_type.decls:
             things[val.name] = get_type(val.type, allow_unprocessed=True)
         return Union(things)
-
+    elif cname(var_type) == 'FuncDecl':
+        return Function([get_type(x.type) for x in var_type.args.params], get_type(var_type.type))
     print(var_type)
+    print(var_type.coord)
     raise NotImplementedError()
+
+
+def parse_arguments(args):
+    if args is None:
+        args = []
+    return [get_type(a.type) for a in args if cname(a) != 'EllipsisParam']
 
 
 def update_types():

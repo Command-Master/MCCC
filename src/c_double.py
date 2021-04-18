@@ -19,7 +19,7 @@ class Double:
 
     def binary(self, op, in1, in2, oval):
         if op == '==':
-            return f'execute store result score {oval} {NAMESPACE} if score {in1[0]} {NAMESPACE} = {in2[0]} {NAMESPACE}\n'
+            return f'execute store result score {oval[0]} {NAMESPACE} if score {in1[0]} {NAMESPACE} = {in2[0]} {NAMESPACE}\n'
         if op == '+':
             code = ''
             code += f'scoreboard players operation $aval {NAMESPACE} = {in1[0]} {NAMESPACE}\n'
@@ -44,11 +44,9 @@ class Double:
             return code
         if op == '/':
             code = ''
-            code += f'scoreboard players operation $aval {NAMESPACE} = {in2[0]} {NAMESPACE}\n'
-            code += f'function {NAMESPACE}:float_inv\n'
-            code += f'scoreboard players operation $aval {NAMESPACE} = $out {NAMESPACE}\n'
-            code += f'scoreboard players operation $bval {NAMESPACE} = {in1[0]} {NAMESPACE}\n'
-            code += f'function {NAMESPACE}:float_mul\n'
+            code += f'scoreboard players operation $aval {NAMESPACE} = {in1[0]} {NAMESPACE}\n'
+            code += f'scoreboard players operation $bval {NAMESPACE} = {in2[0]} {NAMESPACE}\n'
+            code += f'function {NAMESPACE}:float_div\n'
             code += f'scoreboard players operation {oval[0]} {NAMESPACE} = $out {NAMESPACE}\n'
             return code
         if op == '<':

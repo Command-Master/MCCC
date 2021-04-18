@@ -1,5 +1,5 @@
 class Void:
-    size = 0
+    size = 1
 
     def cast(self, ot, itemps, otemps):
         assert type(ot) == Void, f'{ot} != void'

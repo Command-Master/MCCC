@@ -2,6 +2,16 @@ TI = 0
 ft = 0
 used_temps = []
 gtemps = []
+context_id = 1
+
+
+def get_cid():
+    return context_id
+
+
+def new_cid():
+    global context_id
+    context_id += 1
 
 
 def get_temp():

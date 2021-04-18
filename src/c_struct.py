@@ -5,8 +5,8 @@ from globals_consts import cname, NAMESPACE
 
 class Struct:
     def __init__(self, values):
-        self.size = sum(map(lambda x: x.size, values.values()))
         self.values = OrderedDict(values)  # need consistent order
+        self.size = -1
 
     def cast(self, ot, itemps, otemps):
         assert self == ot
@@ -21,6 +21,7 @@ class Struct:
                 self.values[val] = types[val]
             else:
                 self.values[val].update(types)
+        self.size = sum(map(lambda x: x.size, self.values.values()))
 
     def get_field_type(self, name):
         if name in self.values:

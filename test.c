@@ -1,6 +1,7 @@
-#define EOF (-1)
+#include <stdio.h>
+#include <stdlib.h>
 
-int c;
+int c = 2;
 int main() {
     if (1) {
         int a = 3;

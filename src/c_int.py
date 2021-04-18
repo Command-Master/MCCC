@@ -6,16 +6,15 @@ class Int:
     size = 1
 
     def cast(self, ot, itemps, otemps):
-        if type(ot) == Int:
+        if type(ot) == Int or (cname(ot) == 'Pointer' and ot.ptr.size == 1):
             return f'scoreboard players operation {otemps[0]} {NAMESPACE} = {itemps[0]} {NAMESPACE}\n'
         if cname(ot) == 'Pointer':
             return f'scoreboard players operation {otemps[0]} {NAMESPACE} = {itemps[0]} {NAMESPACE}\nscoreboard players operation {otemps[0]} {NAMESPACE} *= ${ot.ptr.size} {NAMESPACE}\n'
         code = ''
         if cname(ot) == 'Complex':
-            ot = Double()  # hahaha they ar ethe same!
+            ot = Double()
             code += f'scoreboard players set {otemps[1]} {NAMESPACE} 0\n'  # 0i
-        if type(ot) == Double:
-            # a hhahahah now i need to think!!! ):
+        if cname(ot) == 'Double':
             code += f'execute store result score $sign {NAMESPACE} if score {itemps[0]} {NAMESPACE} matches ..-1\n'
             code += f'execute if score {itemps[0]} {NAMESPACE} matches 0 run scoreboard players set {otemps[0]} {NAMESPACE} 0\n'  # * 1325400064
             code += f'execute if score {itemps[0]} {NAMESPACE} matches -2147483648 run scoreboard players set {otemps[0]} {NAMESPACE} -1325400064\n'  # * 1325400064
@@ -42,8 +41,6 @@ class Int:
             return f'scoreboard players operation $temp {NAMESPACE} = {in1} {NAMESPACE}\n' \
                    f'scoreboard players operation $temp {NAMESPACE} {op}= {in2} {NAMESPACE}\n' \
                    f'scoreboard players operation {oval} {NAMESPACE} = $temp {NAMESPACE}\n'
-        # if op == '&&':
-        #     return f'execute unless score {in1} {NAMESPACE} matches 0 run scoreboard players operation {oval} {NAMESPACE} = {in2} {NAMESPACE}\n'
         else:
             raise NotImplementedError(op)
 

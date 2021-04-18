@@ -15,13 +15,12 @@ from funccall_expr import funccall_expression
 from unary_expr import address_unary, dereference_unary, operator_unary
 from ternary_expr import ternary_expression
 from while_expr import while_expression
-from temps import used_temps, get_temp
+from temps import used_temps, get_temp, get_cid
 from locals import get_rtype
 
 
 def generate_expression(target, expression, vtypes, variables_name, copy_strings=False,
                         ignore_output=False):
-
     if not ignore_output:
         if cname(expression) == 'ID':
             return id_expression(expression, target, variables_name, vtypes)
@@ -71,6 +70,13 @@ def generate_expression(target, expression, vtypes, variables_name, copy_strings
         elif cname(expression) == 'Break':
             code = f'scoreboard players set $broken {NAMESPACE} 1\n'
             return code, Void(), []
+        elif cname(expression) == 'Label':
+            code = f'label {get_cid()}__{expression.name}\n'
+            c1, t1, tt1 = generate_expression(None, expression.stmt, vtypes, variables_name, copy_strings, True)
+            code += c1
+            return code, t1, tt1
+        elif cname(expression) == 'Goto':
+            return f'goto {get_cid()}__{expression.name}\nscoreboard players set $returned {NAMESPACE} 1\n', Void(), []
     if cname(expression) == 'Decl':
         if expression.init is None:
             return '', Void(), []
@@ -146,11 +152,12 @@ def generate_expression(target, expression, vtypes, variables_name, copy_strings
         return code, t1, tt1
     elif cname(expression) == 'Cast':
         c1, t1, tt1 = generate_expression(target, expression.expr, vtypes, variables_name, copy_strings,
-                                          False) # wait why am I no casting really?
+                                          False)
         type_cast = get_type(expression.to_type.type)
         target = [get_temp() for _ in range(type_cast.size)]
         used_temps.extend(target)
         c1 += t1.cast(type_cast, tt1, target)
+        for ttt in tt1: used_temps.remove(ttt)
         return c1, type_cast, target
     elif cname(expression) == 'UnaryOp':
         if expression.op == 'p++':
@@ -231,6 +238,6 @@ def generate_expression(target, expression, vtypes, variables_name, copy_strings
                 if t not in return_variables: used_temps.remove(t)
             return code, out_type, return_variables
     elif cname(expression) == 'EmptyStatement':
-        return '# empty statement lol\n', Void(), []
-    print(expression, ignore_output)
+        return '', Void(), []
+    print(expression, get_cid())
     raise NotImplementedError(cname(expression))

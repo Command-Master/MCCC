@@ -2,6 +2,15 @@ import tree_gen
 from globals_consts import NAMESPACE
 from temps import gtemps
 
+# https://github.com/ucb-bar/berkeley-softfloat-3/blob/master/source/s_approxRecip_1Ks.c
+app1k0s = [
+    0xFFC4, 0xF0BE, 0xE363, 0xD76F, 0xCCAD, 0xC2F0, 0xBA16, 0xB201,
+    0xAA97, 0xA3C6, 0x9D7A, 0x97A6, 0x923C, 0x8D32, 0x887E, 0x8417
+]
+app1k1s = [
+    0xF0F1, 0xD62C, 0xBFA1, 0xAC77, 0x9C0A, 0x8DDB, 0x8185, 0x76BA,
+    0x6D3B, 0x64D4, 0x5D5C, 0x56B1, 0x50B6, 0x4B55, 0x4679, 0x4211
+]
 
 def generate_trees():
     def callback(val):
@@ -52,6 +61,7 @@ def generate_trees():
     callback = lambda val: f'scoreboard players set $p2 {NAMESPACE} {2 ** val}'
     tree_gen.generate(0, 30, NAMESPACE, callback, NAMESPACE, 'tree/power_of_two', score='$2p')
     callback = lambda val: f'scoreboard players operation $value {NAMESPACE} = {gtemps[val - 2 ** 30]} {NAMESPACE}'
+    print('var range', 2 ** 30, 2 ** 30 + len(gtemps) - 1)
     tree_gen.generate(2 ** 30, 2 ** 30 + len(gtemps) - 1, NAMESPACE, callback, NAMESPACE, 'tree/var_get',
                       score='$index')
     callback = lambda val: f'scoreboard players operation {gtemps[val - 2 ** 30]} {NAMESPACE} = $value {NAMESPACE}'
@@ -75,3 +85,12 @@ def generate_trees():
     callback = lambda val: f'data modify storage {NAMESPACE}:main lstack[{val}] set from storage {NAMESPACE}:main templ'
     tree_gen.generate(0, 1023, NAMESPACE, callback, NAMESPACE, 'tree/local_paste',
                       score='$search1', scale=1024)
+
+    callback = lambda val: f'data modify storage {NAMESPACE}:main stemps set from storage {NAMESPACE}:main setjmp[{val}]'
+    tree_gen.generate(0, 1023, NAMESPACE, callback, NAMESPACE, 'tree/setjmp_copy',
+                      score='$l1')
+
+    callback = lambda \
+        val: f'scoreboard players set $app1 {NAMESPACE} {app1k1s[val]}\nscoreboard players set $r0 {NAMESPACE} {app1k0s[val]}'
+    tree_gen.generate(0, 15, NAMESPACE, callback, NAMESPACE, 'tree/approx_index',
+                      score='$index')

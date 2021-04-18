@@ -9,9 +9,9 @@
 #define bool int
 #define pop() (*(--sp))
 #define push(x) ((*(sp++)) = (x))
-#define isspace(x) ((x)==' ')
+#define isspace(x) ((x)==' '||(x)=='\n')
 #define isnum(x) (((x)>='0')&&((x)<='9'))
-#define is_operator(c)  ((c) == '+' || (c) == '*' || (c) == '/' || (c) == '-')
+#define is_operator(c) ((c) == '+' || (c) == '*' || (c) == '/' || (c) == '-')
 
 typedef struct calculation {
     int size;
@@ -52,9 +52,9 @@ calc reverse_prefix(char* p) {
         return res;
     } else {
         calc res;
-        res.value = 0;
+        res.value = 0.0;
         while (isnum(*p)) {
-            res.value *= 10;
+            res.value *= 10.0;
             res.value += *p - '0';
             size++;
             p--;
@@ -76,7 +76,7 @@ int main() {
     }
     char stack[256];
     char* sp = stack;
-    *(sp++) = ')';
+    push(')');
     char prefix[256];
     char* pp = prefix;
     while (p--, i--) {
